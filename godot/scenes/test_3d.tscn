@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://bclhhtgil6rgv"]
+
+[ext_resource type="PackedScene" uid="uid://drh03cwkf2kmr" path="res://scenes/player_body_3d.tscn" id="1_sr87j"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sr87j"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_psit6"]
+sky_material = SubResource("ProceduralSkyMaterial_sr87j")
+
+[sub_resource type="Environment" id="Environment_7yo4j"]
+background_mode = 2
+sky = SubResource("Sky_psit6")
+glow_enabled = true
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_pxnnn"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hgc8m"]
+albedo_color = Color(0.10980392, 0.5372549, 0.20784314, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_pxnnn"]
+material = SubResource("StandardMaterial3D_hgc8m")
+size = Vector2(30, 30)
+
+[sub_resource type="GDScript" id="GDScript_pxnnn"]
+script/source = "extends CharacterBody3D
+
+
+const SPEED = 5.0
+const JUMP_VELOCITY = 4.5
+
+
+func _physics_process(delta: float) -> void:
+	# Add the gravity.
+	if not is_on_floor():
+		velocity += get_gravity() * delta
+
+	# Handle jump.
+	if Input.is_action_just_pressed(\"ui_accept\") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	# Get the input direction and handle the movement/deceleration.
+	# As good practice, you should replace UI actions with custom gameplay actions.
+	var input_dir := Input.get_vector(\"ui_left\", \"ui_right\", \"ui_up\", \"ui_down\")
+	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	if direction:
+		velocity.x = direction.x * SPEED
+		velocity.z = direction.z * SPEED
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+		velocity.z = move_toward(velocity.z, 0, SPEED)
+
+	move_and_slide()
+"
+
+[node name="Test3D" type="Node3D" unique_id=197704896]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=191721799]
+environment = SubResource("Environment_7yo4j")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=555411837]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="PlayerBody3D" parent="." unique_id=107415529 instance=ExtResource("1_sr87j")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.1879406, 1.9476591, -2.104072)
+
+[node name="Camera3D" type="Camera3D" parent="PlayerBody3D" unique_id=1554989408]
+transform = Transform3D(1, 0, 0, 0, 0.8909751, 0.45405218, 0, -0.45405218, 0.8909751, 0.7896838, 0.87178266, 3.0038521)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1352627290]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1868479483]
+shape = SubResource("WorldBoundaryShape3D_pxnnn")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=95313434]
+mesh = SubResource("PlaneMesh_pxnnn")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." unique_id=953347452]
+script = SubResource("GDScript_pxnnn")
