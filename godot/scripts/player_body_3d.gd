@@ -1,0 +1,1 @@
+class_name PlayerBody3D extends MovableBody3D
